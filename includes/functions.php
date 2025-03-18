@@ -523,4 +523,53 @@ function isActivePage($url, $path) {
 function formatDate($dateString, $format = 'M j, Y g:i A') {
     return date($format, strtotime($dateString));
 }
+
+/**
+ * Mark messages as read from one user to another
+ * 
+ * @param int $receiver_id ID of the user who received the messages
+ * @param int $sender_id ID of the user who sent the messages
+ * @return bool True on success, false on failure
+ */
+function markMessagesAsRead($receiver_id, $sender_id) {
+    global $conn;
+    
+    $stmt = mysqli_prepare($conn, "UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND is_read = 0");
+    mysqli_stmt_bind_param($stmt, "ii", $sender_id, $receiver_id);
+    
+    return mysqli_stmt_execute($stmt);
+}
+
+/**
+ * Get recent unread messages for a user
+ * 
+ * @param int $userId The ID of the user to get messages for
+ * @return array Array of messages with sender information
+ */
+function getRecentMessages($userId) {
+    global $conn;
+    
+    $messages = [];
+    
+    // Get unread messages from other users
+    $stmt = mysqli_prepare($conn, "
+        SELECT m.*, u.fullname, u.avatar, u.role
+        FROM messages m 
+        JOIN users u ON m.sender_id = u.id 
+        WHERE m.receiver_id = ? AND m.read = 0
+        ORDER BY m.created_at DESC
+    ");
+    
+    if ($stmt) {
+        mysqli_stmt_bind_param($stmt, "i", $userId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        while ($row = mysqli_fetch_assoc($result)) {
+            $messages[] = $row;
+        }
+    }
+    
+    return $messages;
+}
 ?>
