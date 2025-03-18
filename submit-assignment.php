@@ -19,11 +19,7 @@ $error = '';
 $assignment_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 // Get assignment details
-$stmt = mysqli_prepare($conn, "SELECT * FROM assignments WHERE id = ?");
-mysqli_stmt_bind_param($stmt, "i", $assignment_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$assignment = mysqli_fetch_assoc($result);
+$assignment = dbQuery("SELECT * FROM assignments WHERE id = ?", "i", [$assignment_id], true);
 
 // Check if assignment exists
 if (!$assignment) {
@@ -31,58 +27,42 @@ if (!$assignment) {
 }
 
 // Check if user has already submitted this assignment
-$stmt = mysqli_prepare($conn, "SELECT id FROM submissions WHERE assignment_id = ? AND student_id = ?");
-mysqli_stmt_bind_param($stmt, "ii", $assignment_id, $_SESSION['user_id']);
-mysqli_stmt_execute($stmt);
-mysqli_stmt_store_result($stmt);
-$alreadySubmitted = mysqli_stmt_num_rows($stmt) > 0;
+$submission = dbQuery(
+    "SELECT * FROM submissions WHERE assignment_id = ? AND student_id = ?",
+    "ii",
+    [$assignment_id, $_SESSION['user_id']],
+    true
+);
 
-// Handle submission
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate file upload
-    if (!isset($_FILES['submission_file']) || $_FILES['submission_file']['error'] !== 0) {
-        $error = "Submission file is required";
-    } else {
-        // Upload file
-        $allowedTypes = ['pdf', 'doc', 'docx', 'txt', 'zip'];
-        $uploadResult = uploadFile($_FILES['submission_file'], SUBMISSION_DIR, $allowedTypes);
+    // Upload submission file
+    $allowedTypes = ['pdf', 'doc', 'docx', 'txt', 'zip'];
+    $uploadResult = uploadFile($_FILES['submission_file'], SUBMISSION_DIR, $allowedTypes);
+    
+    if (isset($uploadResult['success'])) {
+        // Prepare submission data
+        $submissionData = [
+            'assignment_id' => $assignment_id,
+            'student_id' => $_SESSION['user_id'],
+            'file_path' => $uploadResult['path'],
+            'filename' => $uploadResult['filename']
+        ];
         
-        if (isset($uploadResult['success'])) {
-            // Insert submission into database
-            $studentId = $_SESSION['user_id'];
-            $filePath = $uploadResult['path'];
-            $fileName = $uploadResult['filename'];
+        // Save submission using the consolidated function
+        $result = saveSubmission($submissionData);
+        
+        if ($result['success']) {
+            $message = $result['message'];
             
-            if ($alreadySubmitted) {
-                // Update existing submission
-                $stmt = mysqli_prepare($conn, "UPDATE submissions SET file_path = ?, filename = ?, created_at = NOW() WHERE assignment_id = ? AND student_id = ?");
-                mysqli_stmt_bind_param($stmt, "ssii", $filePath, $fileName, $assignment_id, $studentId);
-            } else {
-                // Create new submission
-                $stmt = mysqli_prepare($conn, "INSERT INTO submissions (assignment_id, student_id, file_path, filename) VALUES (?, ?, ?, ?)");
-                mysqli_stmt_bind_param($stmt, "iiss", $assignment_id, $studentId, $filePath, $fileName);
-            }
-            
-            if (mysqli_stmt_execute($stmt)) {
-                $message = "Assignment submitted successfully!";
-                $alreadySubmitted = true;
-            } else {
-                $error = "Error submitting assignment: " . mysqli_error($conn);
-            }
+            // Refresh submission data
+            $submission = getSubmissionById($result['id']);
         } else {
-            $error = $uploadResult['error'];
+            $error = $result['error'];
         }
+    } else {
+        $error = $uploadResult['error'];
     }
-}
-
-// Get user's current submission if it exists
-$submission = null;
-if ($alreadySubmitted) {
-    $stmt = mysqli_prepare($conn, "SELECT * FROM submissions WHERE assignment_id = ? AND student_id = ?");
-    mysqli_stmt_bind_param($stmt, "ii", $assignment_id, $_SESSION['user_id']);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $submission = mysqli_fetch_assoc($result);
 }
 
 $pageTitle = 'Submit Assignment';
@@ -127,7 +107,7 @@ $pageTitle = 'Submit Assignment';
                                 </a>
                             </p>
                             <p>
-                                <strong>Uploaded on:</strong> <?php echo date('M j, Y g:i A', strtotime($assignment['created_at'])); ?>
+                                <strong>Uploaded on:</strong> <?php echo formatDate($assignment['created_at']); ?>
                             </p>
                         </div>
                         
@@ -141,7 +121,7 @@ $pageTitle = 'Submit Assignment';
                                     </a>
                                 </p>
                                 <p>
-                                    <strong>Submitted on:</strong> <?php echo date('M j, Y g:i A', strtotime($submission['created_at'])); ?>
+                                    <strong>Submitted on:</strong> <?php echo formatDate($submission['created_at']); ?>
                                 </p>
                                 <hr>
                                 <p>You can submit again to replace your current submission.</p>
@@ -151,7 +131,10 @@ $pageTitle = 'Submit Assignment';
                         <form action="" method="post" enctype="multipart/form-data">
                             <div class="form-group">
                                 <label for="submission_file">Your Solution</label>
-                                <input type="file" class="form-control-file" id="submission_file" name="submission_file" required>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="submission_file" name="submission_file" required>
+                                    <label class="custom-file-label" for="submission_file">Choose file...</label>
+                                </div>
                                 <small class="form-text text-muted">Allowed file types: PDF, DOC, DOCX, TXT, ZIP</small>
                             </div>
                             <button type="submit" class="btn btn-success">Submit Assignment</button>
@@ -168,5 +151,12 @@ $pageTitle = 'Submit Assignment';
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Show file name when file is selected
+        $('.custom-file-input').on('change', function() {
+            var fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').html(fileName);
+        });
+    </script>
 </body>
 </html>

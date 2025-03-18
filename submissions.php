@@ -18,45 +18,73 @@ $error = '';
 // Get assignment ID from query string if provided
 $assignment_id = isset($_GET['assignment_id']) ? (int)$_GET['assignment_id'] : 0;
 
-// Get all assignments for the dropdown filter
-$assignments = [];
-$stmt = mysqli_prepare($conn, "SELECT id, title FROM assignments ORDER BY created_at DESC");
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $assignments[] = $row;
-}
+// Get all assignments for the dropdown filter - use a function to simplify
+$assignments = getAllAssignments();
 
 // Get submissions based on filter
-$submissions = [];
-$sql = "SELECT s.*, a.title as assignment_title, u.fullname as student_name, u.username, u.avatar
-        FROM submissions s 
-        JOIN assignments a ON s.assignment_id = a.id 
-        JOIN users u ON s.student_id = u.id ";
-
-if ($assignment_id > 0) {
-    $sql .= "WHERE s.assignment_id = ? ";
-    $sql .= "ORDER BY s.created_at DESC";
-    
-    $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $assignment_id);
-} else {
-    $sql .= "ORDER BY s.created_at DESC";
-    $stmt = mysqli_prepare($conn, $sql);
-}
-
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-
-// Update this section where we prepare submissions data
-while ($row = mysqli_fetch_assoc($result)) {
-    // Replace the conversion with a direct URL to serve-file.php
-    $row['download_url'] = "serve-file.php?type=submission&id=" . $row['id'];
-    $submissions[] = $row;
-}
+$submissions = getSubmissionsByAssignment($assignment_id);
 
 $pageTitle = 'View Submissions';
+
+/**
+ * Get all assignments for dropdown
+ * @return array
+ */
+function getAllAssignments() {
+    global $conn;
+    $assignments = [];
+    $stmt = mysqli_prepare($conn, "SELECT id, title FROM assignments ORDER BY created_at DESC");
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $assignments[] = $row;
+    }
+    mysqli_stmt_close($stmt);
+    return $assignments;
+}
+
+/**
+ * Get submissions filtered by assignment if needed
+ * @param int $assignment_id
+ * @return array
+ */
+function getSubmissionsByAssignment($assignment_id = 0) {
+    global $conn;
+    $submissions = [];
+    
+    $sql = "SELECT s.*, a.title as assignment_title, u.fullname as student_name, u.username, u.avatar
+            FROM submissions s 
+            JOIN assignments a ON s.assignment_id = a.id 
+            JOIN users u ON s.student_id = u.id ";
+
+    if ($assignment_id > 0) {
+        $sql .= "WHERE s.assignment_id = ? ";
+        $params = [$assignment_id];
+        $types = "i";
+    } else {
+        $params = [];
+        $types = "";
+    }
+    
+    $sql .= "ORDER BY s.created_at DESC";
+    $stmt = mysqli_prepare($conn, $sql);
+    
+    if (!empty($params)) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $row['download_url'] = "serve-file.php?type=submission&id=" . $row['id'];
+        $submissions[] = $row;
+    }
+    
+    mysqli_stmt_close($stmt);
+    return $submissions;
+}
 ?>
 
 <!DOCTYPE html>
