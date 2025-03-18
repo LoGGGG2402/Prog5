@@ -1,0 +1,723 @@
+/* Base styling */
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 300px; /* Ensure space for footer - increased to avoid overlap */
+    padding-bottom: 60px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    color: #343a40;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Fix for footer positioning */
+footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #343a40;
+    color: white;
+    padding: 20px 0;
+    height: auto;
+}
+
+footer a {
+    color: #9fcdff;
+}
+
+footer a:hover {
+    color: white;
+    text-decoration: none;
+}
+
+/* Enhanced navbar styling */
+.navbar {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 0.8rem 1rem;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-link:hover {
+    transform: translateY(-2px);
+}
+
+.profile-nav-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+}
+
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f8ff;
+}
+
+/* Avatar styling */
+.avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 3px solid #fff;
+}
+
+.avatar-sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+.avatar-md {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Card styling */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border: none;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+    padding: 15px 20px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #eee;
+    padding: 1rem 1.25rem;
+}
+
+/* Table styling */
+.table {
+    background-color: white;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    background-color: #f9f9f9;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 123, 255, 0.03);
+}
+
+/* Form styling */
+.form-control {
+    border-radius: 5px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 5px;
+    padding: 8px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-sm {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Message styling */
+.message-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.message {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.message-sender {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    margin-left: 30px;
+    border-top-left-radius: 4px;
+}
+
+.message-receiver {
+    background-color: #f5f5f5;
+    border-left: 4px solid #9e9e9e;
+    margin-right: 30px;
+    border-top-right-radius: 4px;
+}
+
+.message-meta {
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-top: 10px;
+}
+
+/* Assignment and challenge styling */
+.file-card {
+    transition: transform 0.3s ease;
+}
+
+.file-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* List group styling */
+.list-group-item {
+    border-radius: 8px !important;
+    margin-bottom: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.list-group-item-action:focus, .list-group-item-action:hover {
+    color: #007bff;
+}
+
+/* Badge styling */
+.badge {
+    padding: 0.4em 0.65em;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+/* Modal styling */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.modal-header {
+    border-bottom: 1px solid #eee;
+    background-color: #f8f9fa;
+}
+
+.modal-footer {
+    border-top: 1px solid #eee;
+    background-color: #f8f9fa;
+}
+
+/* Dashboard specific styling */
+.dashboard-card {
+    min-height: 100%;
+}
+
+.dashboard-card .card-header {
+    background-color: #f1f8ff;
+}
+
+/* Enhanced header styling */
+header {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0;
+}
+
+/* Main header container */
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    height: 50px;
+    min-height: 40px;
+    height: auto;
+}
+
+/* Brand styling */
+.header-brand {
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    text-decoration: none;
+    margin-right: 10px;
+    padding: 0 5px;
+    flex-shrink: 0;
+}
+
+.header-brand:hover {
+    color: white;
+    text-decoration: none;
+    opacity: 0.9;
+}
+
+/* Main navigation */
+.header-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+    font-size: 0.85rem;
+}
+
+.header-nav::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.nav-item {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0 2px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.nav-item i {
+    margin-right: 5px;
+    font-size: 0.9rem;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* User section */
+.header-user {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.header-profile {
+    background-color: white;
+    border-radius: 20px;
+    padding: 2px 8px;
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+    color: #007bff;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    max-width: 180px;
+    font-size: 0.85rem;
+}
+
+.header-profile:hover {
+    text-decoration: none;
+    transform: translateY(-2px);
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); */
+    color: #0056b3;
+}
+
+.header-profile img,
+.header-profile i {
+    margin-right: 5px;
+}
+
+.header-profile .badge {
+    margin-left: 5px;
+    font-size: 0.7rem;
+}
+
+.header-logout {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #dc3545;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.header-logout:hover {
+    transform: rotate(180deg);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Mobile menu button */
+.header-menu-toggle {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white;
+    border-radius: 4px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.header-menu-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+
+/* Mobile menu styling */
+.mobile-nav {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 5px;
+}
+
+.mobile-nav-item {
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin: 2px;
+    transition: background-color 0.2s ease;
+    font-size: 0.85rem;
+}
+
+.mobile-nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+}
+
+.mobile-nav-divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 4px 0;
+}
+
+.mobile-nav-profile {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #007bff;
+}
+
+.mobile-nav-logout {
+    background-color: rgba(220, 53, 69, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .nav-item span {
+        display: none;
+    }
+    
+    .nav-item i {
+        margin-right: 0;
+        font-size: 1.1rem;
+    }
+    
+    .nav-item {
+        padding: 8px 12px;
+    }
+}
+
+.brand-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+.nav-pills .nav-link {
+    margin-right: 3px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    border-radius: 5px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+}
+
+.nav-pills .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.profile-pill {
+    padding: 0.3rem 0.8rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.profile-pill:hover {
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-pill .profile-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    margin: 0 5px;
+}
+
+/* User profile and logout styling */
+.btn-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-circle:hover {
+    transform: rotate(180deg);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile navigation styling */
+.navbar-toggler {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+#mobileMenu {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 0.5rem;
+}
+
+/* Remove custom tooltip styling that causes black shadows */
+[title] {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Remove the black tooltip background that appears on hover */
+.header-nav [title]::after {
+    content: none !important; /* Completely disable the tooltip */
+}
+
+/* Alternative approach - keep tooltips but make them invisible */
+.header-nav [title]:hover::after {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Ensure header items have proper hover styling without shadows */
+.header-nav .nav-item:hover,
+.header-brand:hover,
+.header-profile:hover,
+.mobile-nav-item:hover {
+    box-shadow: none !important;
+    transform: translateY(-2px);
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+}
+
+/* Fix for header logout button */
+.header-logout:hover {
+    transform: rotate(180deg);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    color: white;
+    text-decoration: none;
+}
+
+/* Enhanced tooltip styling */
+[title] {
+    position: relative;
+    cursor: pointer;
+}
+
+.header-nav [title]::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.header-nav [title]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    bottom: -25px;
+}
+
+/* Ensure tooltips don't break the layout */
+.header-nav {
+    padding-bottom: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body {
+        margin-bottom: 450px; /* Increase space for footer on mobile */
+    }
+    
+    .profile-nav-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .nav {
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+    
+    .nav-item {
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 576px) {
+    body {
+        margin-bottom: 500px; /* Even more space on smaller screens */
+    }
+}
