@@ -1,6 +1,5 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -10,10 +9,8 @@ if (!isLoggedIn()) {
 // Page title
 $pageTitle = 'Challenges';
 
-// Fetch challenges
-$sql = "SELECT challenges.*, users.fullname AS teacher_name FROM challenges JOIN users ON challenges.teacher_id = users.id ORDER BY challenges.created_at DESC";
-$result = mysqli_query($conn, $sql);
-$challenges = mysqli_fetch_all($result, MYSQLI_ASSOC);
+// Fetch challenges using the Challenge model
+$challenges = $challengeModel->getChallengesWithTeacher();
 
 // Handle challenge answer submission
 $message = '';
@@ -26,39 +23,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_answer']) && i
     $challengeId = (int)$_POST['challenge_id'];
     $answer = trim(sanitize($_POST['answer']));
     
-    // Get challenge details
-    $stmt = mysqli_prepare($conn, "SELECT file_path, result FROM challenges WHERE id = ?");
-    mysqli_stmt_bind_param($stmt, "i", $challengeId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $challenge = mysqli_fetch_assoc($result);
-    
-    if ($challenge) {
-        // Compare the student's answer with the result field
-        if (strtolower($answer) === strtolower($challenge['result'])) {
-            // Correct answer
-            if (file_exists($challenge['file_path'])) {
-                // Store in session that this challenge has been answered correctly
-                if (!isset($_SESSION['answered_challenges'])) {
-                    $_SESSION['answered_challenges'] = [];
-                }
-                if (!in_array($challengeId, $_SESSION['answered_challenges'])) {
-                    $_SESSION['answered_challenges'][] = $challengeId;
-                }
-                
-                $challengeContent = file_get_contents($challenge['file_path']);
-                $showContent = true;
-                $answeredChallenge = $challengeId;
-                $message = "Congratulations! Your answer is correct.";
-            } else {
-                $error = "Error: Challenge file not found.";
+    // Use the Challenge model to check the answer
+    if ($challengeModel->checkAnswer($challengeId, $answer)) {
+        // Get the challenge with content
+        $challenge = $challengeModel->getChallengeWithContent($challengeId);
+        
+        if ($challenge) {
+            // Store in session that this challenge has been answered correctly
+            if (!isset($_SESSION['answered_challenges'])) {
+                $_SESSION['answered_challenges'] = [];
             }
+            if (!in_array($challengeId, $_SESSION['answered_challenges'])) {
+                $_SESSION['answered_challenges'][] = $challengeId;
+            }
+            
+            $challengeContent = $challenge['content'];
+            $showContent = true;
+            $answeredChallenge = $challengeId;
+            $message = "Congratulations! Your answer is correct.";
         } else {
-            // Wrong answer
-            $error = "Incorrect answer. Please try again.";
+            $error = "Error: Challenge file not found.";
         }
     } else {
-        $error = "Challenge not found.";
+        // Wrong answer
+        $error = "Incorrect answer. Please try again.";
     }
 }
 ?>
@@ -115,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_answer']) && i
                                         </h5>
                                         <span class="badge badge-info">
                                             <i class="fas fa-calendar-alt mr-1"></i>
-                                            <?php echo date('d M Y', strtotime($challenge['created_at'])); ?>
+                                            <?php echo formatDate($challenge['created_at'], 'd M Y'); ?>
                                         </span>
                                     </div>
 
@@ -158,8 +146,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_answer']) && i
                                                 </div>
                                                 <?php 
                                                     // For teachers, show the answer and file content
-                                                    $filePath = $challenge['file_path'];
-                                                    $fileContent = file_exists($filePath) ? file_get_contents($filePath) : "File not found";
+                                                    $challengeWithContent = $challengeModel->getChallengeWithContent($challenge['id']);
+                                                    $fileContent = $challengeWithContent['content'] ?? "File content not available";
                                                     
                                                     // Generate secure download link
                                                     $downloadLink = "serve-file.php?type=challenge&id=" . $challenge['id'];

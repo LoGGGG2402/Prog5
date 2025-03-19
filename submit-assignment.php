@@ -1,6 +1,6 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
+require_once 'utils/FileHandler.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -18,8 +18,8 @@ $error = '';
 // Get assignment ID from query string
 $assignment_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Get assignment details
-$assignment = dbQuery("SELECT * FROM assignments WHERE id = ?", "i", [$assignment_id], true);
+// Get assignment details using Assignment model
+$assignment = $assignmentModel->find($assignment_id);
 
 // Check if assignment exists
 if (!$assignment) {
@@ -27,18 +27,13 @@ if (!$assignment) {
 }
 
 // Check if user has already submitted this assignment
-$submission = dbQuery(
-    "SELECT * FROM submissions WHERE assignment_id = ? AND student_id = ?",
-    "ii",
-    [$assignment_id, $_SESSION['user_id']],
-    true
-);
+$submission = $submissionModel->findByAssignmentAndStudent($assignment_id, $_SESSION['user_id']);
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Upload submission file
     $allowedTypes = ['pdf', 'doc', 'docx', 'txt', 'zip'];
-    $uploadResult = uploadFile($_FILES['submission_file'], SUBMISSION_DIR, $allowedTypes);
+    $uploadResult = FileHandler::uploadFile($_FILES['submission_file'], SUBMISSION_DIR, $allowedTypes);
     
     if (isset($uploadResult['success'])) {
         // Prepare submission data
@@ -49,14 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'filename' => $uploadResult['filename']
         ];
         
-        // Save submission using the consolidated function
-        $result = saveSubmission($submissionData);
+        // Save submission using the Submission model
+        $result = $submissionModel->saveSubmission($submissionData);
         
         if ($result['success']) {
             $message = $result['message'];
             
             // Refresh submission data
-            $submission = getSubmissionById($result['id']);
+            $submission = $submissionModel->find($result['id']);
         } else {
             $error = $result['error'];
         }

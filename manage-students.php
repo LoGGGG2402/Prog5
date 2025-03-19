@@ -1,6 +1,5 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
 
 // Check if user is logged in and is a teacher
 if (!isLoggedIn() || !isTeacher()) {
@@ -10,10 +9,8 @@ if (!isLoggedIn() || !isTeacher()) {
 // Page title
 $pageTitle = 'Manage Students';
 
-// Fetch students
-$sql = "SELECT * FROM users WHERE role = 'student' ORDER BY fullname ASC";
-$result = mysqli_query($conn, $sql);
-$students = mysqli_fetch_all($result, MYSQLI_ASSOC);
+// Fetch students using User model
+$students = $userModel->getAllStudents();
 ?>
 
 <!DOCTYPE html>

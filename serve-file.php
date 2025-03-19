@@ -1,6 +1,6 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
+require_once 'utils/FileHandler.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -20,8 +20,24 @@ if (empty($type) || $id <= 0) {
     exit;
 }
 
-// Get file information using the consolidated function
-$fileInfo = getFileByTypeAndId($type, $id);
+// Get file information based on type
+$fileInfo = null;
+
+switch ($type) {
+    case 'assignment':
+        $fileInfo = $assignmentModel->find($id);
+        break;
+    case 'submission':
+        $fileInfo = $submissionModel->find($id);
+        break;
+    case 'challenge':
+        $fileInfo = $challengeModel->find($id);
+        break;
+    default:
+        header('HTTP/1.0 400 Bad Request');
+        echo "Invalid file type";
+        exit;
+}
 
 // Check if file exists
 if (!$fileInfo || empty($fileInfo['file_path']) || !file_exists($fileInfo['file_path'])) {
@@ -30,6 +46,6 @@ if (!$fileInfo || empty($fileInfo['file_path']) || !file_exists($fileInfo['file_
     exit;
 }
 
-// Serve the file for download
-serveFileDownload($fileInfo['file_path'], $fileInfo['filename']);
+// Serve the file for download using the FileHandler class
+FileHandler::serveFileDownload($fileInfo['file_path'], $fileInfo['filename'] ?? basename($fileInfo['file_path']));
 ?>

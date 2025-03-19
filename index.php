@@ -1,6 +1,5 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -8,7 +7,7 @@ if (!isLoggedIn()) {
 }
 
 // Get all users
-$users = getAllUsers();
+$users = $userModel->all('fullname', 'ASC');
 
 // Page title
 $pageTitle = 'Classroom Management System';
@@ -115,6 +114,6 @@ $pageTitle = 'Classroom Management System';
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="js/script.js"></script>
+    <script src="js/common.js"></script>
 </body>
 </html>

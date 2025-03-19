@@ -1,6 +1,6 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
+require_once 'utils/FileHandler.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -13,8 +13,8 @@ $error = '';
 // Get user ID from query string
 $user_id = isset($_GET['id']) ? (int) $_GET['id'] : $_SESSION['user_id'];
 
-// Get user details
-$user = getUserById($user_id);
+// Get user details using User model
+$user = $userModel->find($user_id);
 if (!$user) {
     redirect('index.php');
 }
@@ -30,36 +30,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         if (isStudent() && $user_id != $_SESSION['user_id']) {
             $error = "You don't have permission to update this profile";
         } else {
-            // Update profile information
-            $updateFields = [];
-            $params = [];
-            $types = "";
+            // Prepare update data
+            $userData = [
+                'email' => $email,
+                'phone' => $phone
+            ];
 
             // For teacher updating student information
             if (isTeacher() && $user['role'] == 'student') {
-                $username = sanitize($_POST['username']);
-                $fullname = sanitize($_POST['fullname']);
-
-                $updateFields[] = "username = ?";
-                $updateFields[] = "fullname = ?";
-                $params[] = $username;
-                $params[] = $fullname;
-                $types .= "ss";
+                $userData['username'] = sanitize($_POST['username']);
+                $userData['fullname'] = sanitize($_POST['fullname']);
 
                 // Update password if provided
                 if (!empty($_POST['password'])) {
-                    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-                    $updateFields[] = "password = ?";
-                    $params[] = $password;
-                    $types .= "s";
+                    $userData['password'] = $_POST['password']; // Will be hashed by updateUser
                 }
             }
-
-            $updateFields[] = "email = ?";
-            $updateFields[] = "phone = ?";
-            $params[] = $email;
-            $params[] = $phone;
-            $types .= "ss";
 
             // Handle avatar upload
             if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === 0) {
@@ -69,45 +55,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                 }
 
                 $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-                $uploadResult = uploadFile($_FILES['avatar'], AVATAR_DIR, $allowedTypes);
+                $uploadResult = FileHandler::uploadFile($_FILES['avatar'], AVATAR_DIR, $allowedTypes);
 
                 if (isset($uploadResult['success'])) {
-                    // Convert file path to URL format - make sure we're using the right format
+                    // Convert file path to URL format
                     $avatarPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $uploadResult['path']);
                     // Add site URL if it's not an absolute path
                     if (substr($avatarPath, 0, 1) === '/') {
                         $avatarPath = SITE_URL . $avatarPath;
                     }
 
-                    $updateFields[] = "avatar = ?";
-                    $params[] = $avatarPath;
-                    $types .= "s";
+                    $userData['avatar'] = $avatarPath;
                 } else {
                     $error = $uploadResult['error'];
                 }
             } elseif (isset($_POST['avatar_url']) && !empty($_POST['avatar_url'])) {
-                $avatarUrl = sanitize($_POST['avatar_url']);
-                $updateFields[] = "avatar = ?";
-                $params[] = $avatarUrl;
-                $types .= "s";
+                $userData['avatar'] = sanitize($_POST['avatar_url']);
             }
 
             // Proceed with update if no errors
             if (empty($error)) {
-                $sql = "UPDATE users SET " . implode(", ", $updateFields) . " WHERE id = ?";
-                $params[] = $user_id;
-                $types .= "i";
+                $result = $userModel->updateUser($user_id, $userData);
 
-                $stmt = mysqli_prepare($conn, $sql);
-                mysqli_stmt_bind_param($stmt, $types, ...$params);
-
-                if (mysqli_stmt_execute($stmt)) {
+                if ($result) {
                     $message = "Profile updated successfully!";
 
                     // Refresh user data
-                    $user = getUserById($user_id);
+                    $user = $userModel->find($user_id);
+                    
+                    // Update session if updating own profile
+                    if ($user_id == $_SESSION['user_id']) {
+                        $_SESSION['fullname'] = $user['fullname'];
+                        $_SESSION['avatar'] = $user['avatar'];
+                    }
                 } else {
-                    $error = "Error updating profile: " . mysqli_error($conn);
+                    $error = "Error updating profile";
                 }
             }
         }
@@ -128,13 +110,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if ($senderId == $receiverId) {
                 $error = "You cannot send messages to yourself.";
             } else {
-                $stmt = mysqli_prepare($conn, "INSERT INTO messages (sender_id, receiver_id, message) VALUES (?, ?, ?)");
-                mysqli_stmt_bind_param($stmt, "iis", $senderId, $receiverId, $messageText);
+                $messageData = [
+                    'sender_id' => $senderId,
+                    'receiver_id' => $receiverId,
+                    'message' => $messageText
+                ];
+                
+                $result = $messageModel->create($messageData);
 
-                if (mysqli_stmt_execute($stmt)) {
+                if ($result) {
                     $message = "Message sent successfully!";
                 } else {
-                    $error = "Failed to send message: " . mysqli_error($conn);
+                    $error = "Failed to send message";
                 }
             }
             break;
@@ -144,13 +131,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $messageText = sanitize($_POST['message']);
             $senderId = $_SESSION['user_id'];
 
-            $stmt = mysqli_prepare($conn, "UPDATE messages SET message = ? WHERE id = ? AND sender_id = ?");
-            mysqli_stmt_bind_param($stmt, "sii", $messageText, $messageId, $senderId);
-
-            if (mysqli_stmt_execute($stmt)) {
-                $message = "Message updated successfully!";
+            $messageData = [
+                'message' => $messageText
+            ];
+            
+            // First, check if the message belongs to the current user
+            $existingMessage = $messageModel->find($messageId);
+            if ($existingMessage && $existingMessage['sender_id'] == $senderId) {
+                $result = $messageModel->update($messageId, $messageData);
+                
+                if ($result) {
+                    $message = "Message updated successfully!";
+                } else {
+                    $error = "Failed to update message";
+                }
             } else {
-                $error = "Failed to update message: " . mysqli_error($conn);
+                $error = "You don't have permission to edit this message";
             }
             break;
 
@@ -158,13 +154,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $messageId = (int) $_POST['message_id'];
             $senderId = $_SESSION['user_id'];
 
-            $stmt = mysqli_prepare($conn, "DELETE FROM messages WHERE id = ? AND sender_id = ?");
-            mysqli_stmt_bind_param($stmt, "ii", $messageId, $senderId);
-
-            if (mysqli_stmt_execute($stmt)) {
-                $message = "Message deleted successfully!";
+            // First, check if the message belongs to the current user
+            $existingMessage = $messageModel->find($messageId);
+            if ($existingMessage && $existingMessage['sender_id'] == $senderId) {
+                $result = $messageModel->delete($messageId);
+                
+                if ($result) {
+                    $message = "Message deleted successfully!";
+                } else {
+                    $error = "Failed to delete message";
+                }
             } else {
-                $error = "Failed to delete message: " . mysqli_error($conn);
+                $error = "You don't have permission to delete this message";
             }
             break;
     }
@@ -173,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 // Mark messages as read if we're viewing someone else's profile
 if ($user_id != $_SESSION['user_id']) {
     // Mark all messages from this user as read
-    markMessagesAsRead($_SESSION['user_id'], $user_id);
+    $messageModel->markAsRead($_SESSION['user_id'], $user_id);
 }
 
 // Check if we're coming from a reply action
@@ -182,30 +183,17 @@ $sender_id = isset($_GET['sender_id']) ? (int)$_GET['sender_id'] : 0;
 
 // If we arrived at this page from clicking "Reply", mark that sender's messages as read
 if ($from_reply && $sender_id > 0) {
-    markMessagesAsRead($_SESSION['user_id'], $sender_id);
+    $messageModel->markAsRead($_SESSION['user_id'], $sender_id);
 }
 
 // Fetch messages for this user
 $messages = [];
 if ($user_id == $_SESSION['user_id']) {
     // If viewing own profile, get recent unread messages from all users
-    $messages = getRecentMessages($_SESSION['user_id']);
+    $messages = $messageModel->getUnreadMessages($_SESSION['user_id']);
 } else {
     // If viewing another profile, get conversation with that user
-    $stmt = mysqli_prepare($conn, "
-        SELECT m.*, u.fullname, u.avatar 
-        FROM messages m 
-        JOIN users u ON m.sender_id = u.id 
-        WHERE (m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?)
-        ORDER BY m.created_at ASC
-    ");
-    mysqli_stmt_bind_param($stmt, "iiii", $_SESSION['user_id'], $user_id, $user_id, $_SESSION['user_id']);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    while ($row = mysqli_fetch_assoc($result)) {
-        $messages[] = $row;
-    }
+    $messages = $messageModel->getConversation($_SESSION['user_id'], $user_id);
 }
 
 $pageTitle = 'Profile: ' . $user['fullname'];
@@ -213,7 +201,6 @@ $pageTitle = 'Profile: ' . $user['fullname'];
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -222,7 +209,6 @@ $pageTitle = 'Profile: ' . $user['fullname'];
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
     <?php include 'includes/header.php'; ?>
 
@@ -250,8 +236,7 @@ $pageTitle = 'Profile: ' . $user['fullname'];
 
                         <ul class="list-group text-left">
                             <li class="list-group-item"><strong>Username:</strong> <?php echo $user['username']; ?></li>
-                            <li class="list-group-item"><strong>Role:</strong> <?php echo ucfirst($user['role']); ?>
-                            </li>
+                            <li class="list-group-item"><strong>Role:</strong> <?php echo ucfirst($user['role']); ?></li>
                             <li class="list-group-item"><strong>Email:</strong> <?php echo $user['email']; ?></li>
                             <li class="list-group-item"><strong>Phone:</strong> <?php echo $user['phone']; ?></li>
                         </ul>
@@ -301,15 +286,14 @@ $pageTitle = 'Profile: ' . $user['fullname'];
                                         <p><?php echo $msg['message']; ?></p>
 
                                         <div class="message-meta d-flex justify-content-between">
-                                            <span><?php echo date('M j, Y g:i A', strtotime($msg['created_at'])); ?></span>
+                                            <span><?php echo formatDate($msg['created_at']); ?></span>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <!-- Display conversation with specific user -->
                                 <?php foreach ($messages as $msg): ?>
-                                    <div
-                                        class="message <?php echo ($msg['sender_id'] == $_SESSION['user_id']) ? 'message-sender' : 'message-receiver'; ?>">
+                                    <div class="message <?php echo ($msg['sender_id'] == $_SESSION['user_id']) ? 'message-sender' : 'message-receiver'; ?>">
                                         <div class="d-flex align-items-center mb-2">
                                             <?php if (!empty($user['avatar'])): ?>
                                                 <img src="<?php echo $user['avatar']; ?>" alt="Avatar" class="avatar-sm">
@@ -322,7 +306,7 @@ $pageTitle = 'Profile: ' . $user['fullname'];
                                         <p><?php echo $msg['message']; ?></p>
 
                                         <div class="message-meta d-flex justify-content-between">
-                                            <span><?php echo date('M j, Y g:i A', strtotime($msg['created_at'])); ?></span>
+                                            <span><?php echo formatDate($msg['created_at']); ?></span>
 
                                             <?php if ($msg['sender_id'] == $_SESSION['user_id']): ?>
                                                 <div>
@@ -507,5 +491,4 @@ $pageTitle = 'Profile: ' . $user['fullname'];
         });
     </script>
 </body>
-
 </html>

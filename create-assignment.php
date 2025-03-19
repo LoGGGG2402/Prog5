@@ -1,6 +1,6 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
+require_once 'utils/FileHandler.php';
 
 // Check if user is logged in and is a teacher
 if (!isLoggedIn() || !isTeacher()) {
@@ -24,23 +24,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     elseif (!isset($_FILES['assignment_file']) || $_FILES['assignment_file']['error'] !== 0) {
         $error = "Assignment file is required";
     } else {
-        // Upload file
+        // Upload file using FileHandler utility
         $allowedTypes = ['pdf', 'doc', 'docx', 'txt', 'zip'];
-        $uploadResult = uploadFile($_FILES['assignment_file'], ASSIGNMENT_DIR, $allowedTypes);
+        $uploadResult = FileHandler::uploadFile($_FILES['assignment_file'], ASSIGNMENT_DIR, $allowedTypes);
         
         if (isset($uploadResult['success'])) {
-            // Prepare file path for DB insertion - convert to URL format
+            // Prepare file path for DB insertion
             $filePath = $uploadResult['path'];
             $fileName = $uploadResult['filename'];
             
-            // Insert assignment into database
-            $stmt = mysqli_prepare($conn, "INSERT INTO assignments (teacher_id, title, description, file_path, filename) VALUES (?, ?, ?, ?, ?)");
-            mysqli_stmt_bind_param($stmt, "issss", $teacherId, $title, $description, $filePath, $fileName);
+            // Create assignment using the Assignment model
+            $assignmentData = [
+                'teacher_id' => $teacherId,
+                'title' => $title,
+                'description' => $description,
+                'file_path' => $filePath,
+                'filename' => $fileName
+            ];
             
-            if (mysqli_stmt_execute($stmt)) {
+            $newId = $assignmentModel->create($assignmentData);
+            
+            if ($newId) {
                 $message = "Assignment created successfully!";
             } else {
-                $error = "Error creating assignment: " . mysqli_error($conn);
+                $error = "Error creating assignment";
             }
         } else {
             $error = $uploadResult['error'];
@@ -120,12 +127,6 @@ $pageTitle = 'Create Assignment';
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        // Show file name when file is selected
-        $('.custom-file-input').on('change', function() {
-            var fileName = $(this).val().split('\\').pop();
-            $(this).next('.custom-file-label').html(fileName);
-        });
-    </script>
+    <script src="js/common.js"></script>
 </body>
 </html>

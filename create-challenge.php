@@ -1,7 +1,6 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
-require_once 'includes/config.php';
+require_once 'includes/init.php';
+require_once 'utils/FileHandler.php';
 
 // Check if user is logged in and is a teacher
 if (!isLoggedIn() || !isTeacher()) {
@@ -38,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!defined('CHALLENGE_DIR') || !is_dir(CHALLENGE_DIR)) {
             $error = "Upload directory is not properly configured";
         } else {
-            // Upload file
+            // Upload file using FileHandler utility
             $allowedTypes = ['txt'];
-            $uploadResult = uploadFile($_FILES['challenge_file'], CHALLENGE_DIR, $allowedTypes);
+            $uploadResult = FileHandler::uploadFile($_FILES['challenge_file'], CHALLENGE_DIR, $allowedTypes);
             
             if (isset($uploadResult['success'])) {
                 $filePath = $uploadResult['path'];
@@ -50,14 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = "Security violation detected in file path";
                     @unlink($filePath);
                 } else {
-                    // Save to database
-                    $result = dbExecute(
-                        "INSERT INTO challenges (teacher_id, hint, file_path, result) VALUES (?, ?, ?, ?)",
-                        "isss", 
-                        [$teacherId, $hint, $filePath, $result]
-                    );
+                    // Save to database using Challenge model
+                    $challengeData = [
+                        'teacher_id' => $teacherId,
+                        'hint' => $hint,
+                        'file_path' => $filePath,
+                        'result' => $result
+                    ];
                     
-                    if ($result !== false) {
+                    $newId = $challengeModel->create($challengeData);
+                    
+                    if ($newId) {
                         $message = "Challenge created successfully!";
                     } else {
                         $error = "Error creating challenge: Database error";

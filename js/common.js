@@ -1,40 +1,43 @@
 /**
- * Common JavaScript functions for classroom management system
+ * Common JavaScript functions for Classroom Management System
  */
 
-// Show file name when file is selected in a custom file input
 $(document).ready(function() {
+    // Handle file input display
     $('.custom-file-input').on('change', function() {
         var fileName = $(this).val().split('\\').pop();
         $(this).next('.custom-file-label').html(fileName);
     });
     
-    // Initialize tooltips
+    // Enable tooltips
     $('[data-toggle="tooltip"]').tooltip();
     
-    // Add confirmation dialog to delete buttons
-    $('.btn-delete-confirm').on('click', function(e) {
-        if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
-            e.preventDefault();
-            return false;
-        }
-    });
+    // Enable popovers
+    $('[data-toggle="popover"]').popover();
     
-    // Handle message editing
-    $('.edit-message').on('click', function() {
-        let messageId = $(this).data('id');
-        let messageText = $(this).data('message');
-        $('#message_id').val(messageId);
-        $('#message_text').val(messageText);
-        $('#editMessageModal').modal('show');
-    });
-    
-    // Handle message deletion
-    $('.delete-message').on('click', function() {
-        if (confirm('Are you sure you want to delete this message?')) {
-            let messageId = $(this).data('id');
-            $('#delete_message_id').val(messageId);
-            $('#deleteMessageForm').submit();
-        }
-    });
+    // Automatically dismiss alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert-success, .alert-info').fadeOut(500);
+    }, 5000);
 });
+
+/**
+ * Format dates in a user-friendly way
+ * @param {string} dateString - The date string to format
+ * @return {string} Formatted date
+ */
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+/**
+ * Confirm deletion with a modal dialog
+ * @param {string} message - Confirmation message
+ * @param {function} callback - Function to call on confirmation
+ */
+function confirmDelete(message, callback) {
+    if (confirm(message || 'Are you sure you want to delete this item?')) {
+        callback();
+    }
+}

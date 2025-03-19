@@ -1,6 +1,5 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -18,73 +17,17 @@ $error = '';
 // Get assignment ID from query string if provided
 $assignment_id = isset($_GET['assignment_id']) ? (int)$_GET['assignment_id'] : 0;
 
-// Get all assignments for the dropdown filter - use a function to simplify
-$assignments = getAllAssignments();
+// Get all assignments for the dropdown filter using Assignment model
+$assignments = $assignmentModel->all('created_at', 'DESC');
 
 // Get submissions based on filter
-$submissions = getSubmissionsByAssignment($assignment_id);
+$filter = [];
+if ($assignment_id > 0) {
+    $filter['assignment_id'] = $assignment_id;
+}
+$submissions = $submissionModel->getSubmissionsWithDetails($filter);
 
 $pageTitle = 'View Submissions';
-
-/**
- * Get all assignments for dropdown
- * @return array
- */
-function getAllAssignments() {
-    global $conn;
-    $assignments = [];
-    $stmt = mysqli_prepare($conn, "SELECT id, title FROM assignments ORDER BY created_at DESC");
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    while ($row = mysqli_fetch_assoc($result)) {
-        $assignments[] = $row;
-    }
-    mysqli_stmt_close($stmt);
-    return $assignments;
-}
-
-/**
- * Get submissions filtered by assignment if needed
- * @param int $assignment_id
- * @return array
- */
-function getSubmissionsByAssignment($assignment_id = 0) {
-    global $conn;
-    $submissions = [];
-    
-    $sql = "SELECT s.*, a.title as assignment_title, u.fullname as student_name, u.username, u.avatar
-            FROM submissions s 
-            JOIN assignments a ON s.assignment_id = a.id 
-            JOIN users u ON s.student_id = u.id ";
-
-    if ($assignment_id > 0) {
-        $sql .= "WHERE s.assignment_id = ? ";
-        $params = [$assignment_id];
-        $types = "i";
-    } else {
-        $params = [];
-        $types = "";
-    }
-    
-    $sql .= "ORDER BY s.created_at DESC";
-    $stmt = mysqli_prepare($conn, $sql);
-    
-    if (!empty($params)) {
-        mysqli_stmt_bind_param($stmt, $types, ...$params);
-    }
-    
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    while ($row = mysqli_fetch_assoc($result)) {
-        $row['download_url'] = "serve-file.php?type=submission&id=" . $row['id'];
-        $submissions[] = $row;
-    }
-    
-    mysqli_stmt_close($stmt);
-    return $submissions;
-}
 ?>
 
 <!DOCTYPE html>
@@ -157,9 +100,9 @@ function getSubmissionsByAssignment($assignment_id = 0) {
                                                 </td>
                                                 <td><?php echo $submission['assignment_title']; ?></td>
                                                 <td><?php echo $submission['filename']; ?></td>
-                                                <td><?php echo date('M j, Y g:i A', strtotime($submission['created_at'])); ?></td>
+                                                <td><?php echo formatDate($submission['created_at']); ?></td>
                                                 <td>
-                                                    <a href="<?php echo $submission['download_url']; ?>" class="btn btn-sm btn-primary" download>
+                                                    <a href="serve-file.php?type=submission&id=<?php echo $submission['id']; ?>" class="btn btn-sm btn-primary" download>
                                                         <i class="fas fa-download"></i> Download
                                                     </a>
                                                     <a href="profile.php?id=<?php echo $submission['student_id']; ?>" class="btn btn-sm btn-info">

@@ -1,6 +1,5 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
 
 // If already logged in, redirect to index
 if (isLoggedIn()) {
@@ -16,26 +15,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($password)) {
         $error = 'Username and password are required';
     } else {
-        $stmt = mysqli_prepare($conn, "SELECT id, username, password, fullname, role, avatar FROM users WHERE username = ?");
-        mysqli_stmt_bind_param($stmt, "s", $username);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
+        $user = $userModel->authenticate($username, $password);
         
-        if ($user = mysqli_fetch_assoc($result)) {
-            if (password_verify($password, $user['password'])) {
-                // Set session
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['fullname'] = $user['fullname'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['avatar'] = $user['avatar'];
-                
-                redirect('index.php');
-            } else {
-                $error = 'Invalid password';
-            }
+        if ($user) {
+            // Set session
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['fullname'] = $user['fullname'];
+            $_SESSION['role'] = $user['role'];
+            $_SESSION['avatar'] = $user['avatar'];
+            
+            redirect('index.php');
         } else {
-            $error = 'User not found';
+            $error = 'Invalid username or password';
         }
     }
 }
@@ -50,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-</h*ead>
+</head>
 <body class="bg-light">
     <div class="container">
         <div class="row justify-content-center mt-5">

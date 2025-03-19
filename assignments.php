@@ -1,6 +1,5 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -11,20 +10,10 @@ if (!isLoggedIn()) {
 $pageTitle = 'Assignments';
 
 // Fetch assignments
-$sql = "SELECT assignments.*, users.fullname AS teacher_name FROM assignments JOIN users ON assignments.teacher_id = users.id ORDER BY assignments.created_at DESC";
-$result = mysqli_query($conn, $sql);
-$assignments = mysqli_fetch_all($result, MYSQLI_ASSOC);
-
-// For each assignment, check if the student has already submitted
 if (isStudent()) {
-    $student_id = $_SESSION['user_id'];
-    foreach ($assignments as &$assignment) {
-        $stmt = mysqli_prepare($conn, "SELECT id FROM submissions WHERE assignment_id = ? AND student_id = ?");
-        mysqli_stmt_bind_param($stmt, "ii", $assignment['id'], $student_id);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_store_result($stmt);
-        $assignment['has_submitted'] = mysqli_stmt_num_rows($stmt) > 0;
-    }
+    $assignments = $assignmentModel->getAssignmentsForStudent($_SESSION['user_id']);
+} else {
+    $assignments = $assignmentModel->getAssignmentsWithTeacher();
 }
 ?>
 

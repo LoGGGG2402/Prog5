@@ -1,6 +1,5 @@
 <?php
-require_once 'includes/db.php';
-require_once 'includes/functions.php';
+require_once 'includes/init.php';
 
 // Check if user is logged in and is a student
 if (!isLoggedIn() || !isStudent()) {
@@ -12,9 +11,7 @@ $pageTitle = 'My Submissions';
 
 // Fetch submissions
 $userId = $_SESSION['user_id'];
-$sql = "SELECT submissions.*, assignments.title AS assignment_title FROM submissions JOIN assignments ON submissions.assignment_id = assignments.id WHERE submissions.student_id = $userId ORDER BY submissions.created_at DESC";
-$result = mysqli_query($conn, $sql);
-$submissions = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$submissions = $submissionModel->getSubmissionsWithDetails(['student_id' => $userId]);
 ?>
 
 <!DOCTYPE html>
@@ -63,7 +60,7 @@ $submissions = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                         <tr>
                                             <td><?php echo $submission['assignment_title']; ?></td>
                                             <td><?php echo $submission['filename']; ?></td>
-                                            <td><?php echo date('d M Y, h:i A', strtotime($submission['created_at'])); ?></td>
+                                            <td><?php echo formatDate($submission['created_at']); ?></td>
                                             <td>
                                                 <a href="serve-file.php?type=submission&id=<?php echo $submission['id']; ?>" class="btn btn-sm btn-info" download>
                                                     <i class="fas fa-download"></i> Download
