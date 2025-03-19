@@ -35,7 +35,7 @@
                     <?php else: ?>
                         <i class="fas fa-user-circle"></i>
                     <?php endif; ?>
-                    <span class="d-none d-lg-inline"><?php echo $_SESSION['fullname']; ?></span>
+                    <span><?php echo $_SESSION['fullname']; ?></span>
                     <span class="badge badge-light"><?php echo ucfirst($_SESSION['role']); ?></span>
                 </a>
                 <a class="header-logout" href="logout.php" title="Logout">

@@ -443,24 +443,40 @@ header {
 }
 
 .header-profile {
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.15); /* More transparent instead of solid white */
     border-radius: 20px;
     padding: 2px 8px;
     display: flex;
     align-items: center;
     margin-right: 8px;
-    color: #007bff;
+    color: #ffffff; /* Changed to white text for better contrast */
     text-decoration: none;
     transition: all 0.2s ease;
-    max-width: 180px;
+    max-width: 220px;
     font-size: 0.85rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+}
+
+.header-profile span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Fixed from 'initial' to 'ellipsis' */
+    margin: 0 5px;
+    display: inline-block; /* Added to ensure proper text truncation */
+    color: #ffffff; /* Ensure text is white */
+}
+
+.header-profile span:first-of-type {
+    max-width: 120px; /* Specific width for the name */
 }
 
 .header-profile:hover {
     text-decoration: none;
     transform: translateY(-2px);
-    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); */
-    color: #0056b3;
+    background-color: rgba(255, 255, 255, 0.25); /* Slightly more visible on hover */
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.4); /* More visible border on hover */
 }
 
 .header-profile img,
@@ -471,6 +487,9 @@ header {
 .header-profile .badge {
     margin-left: 5px;
     font-size: 0.7rem;
+    background-color: rgba(255, 255, 255, 0.25); /* Semi-transparent badge */
+    color: #fff; /* White text for badge */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border */
 }
 
 .header-logout {
@@ -731,9 +750,13 @@ header {
         align-items: flex-start;
     }
 
-    .nav {
+    .nav {   
         flex-wrap: wrap;
+    }
+    
+    .header-profile {
         margin-bottom: 10px;
+        max-width: 200px; /* Adjusted for medium screens */
     }
     
     .nav-item {
@@ -744,6 +767,22 @@ header {
 @media (max-width: 576px) {
     body {
         margin-bottom: 500px; /* Even more space on smaller screens */
+    }
+    
+    .header-profile {
+        max-width: 160px; /* Adjusted for smaller screens */
+    }
+    
+    .header-profile span:first-of-type {
+        max-width: 80px; /* Smaller width for name on mobile */
+    }
+    
+    /* Added specific style for badge in profile on small screens */
+    .header-profile .badge {
+        font-size: 0.65rem;
+        padding: 0.2em 0.4em;
+        background-color: rgba(255, 255, 255, 0.25);
+        color: #fff;
     }
 }
 
@@ -759,10 +798,10 @@ header {
 .header-brand {
     display: flex;
     align-items: center;
-    color: white;
     font-size: 1.5rem;
     text-decoration: none;
     font-weight: bold;
+    color: white;
 }
 
 .header-brand:hover {
@@ -806,7 +845,6 @@ header {
 .header-profile {
     display: flex;
     align-items: center;
-    color: white;
     text-decoration: none;
     border-radius: 4px;
 }
@@ -825,6 +863,7 @@ header {
 
 .header-logout:hover {
     color: white;
+    text-decoration: none;
 }
 
 .header-menu-toggle {

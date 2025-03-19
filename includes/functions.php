@@ -54,15 +54,7 @@ function formatDate($dateString, $format = 'M j, Y g:i A') {
     return date($format, strtotime($dateString));
 }
 
-// Legacy file handling function - kept for backward compatibility
-// Use FileHandler class for new code
-function uploadFile($file, $targetDir, $allowedTypes = []) {
-    require_once __DIR__ . '/../utils/FileHandler.php';
-    return FileHandler::uploadFile($file, $targetDir, $allowedTypes);
-}
-
-function serveFileDownload($filePath, $fileName) {
-    require_once __DIR__ . '/../utils/FileHandler.php';
-    return FileHandler::serveFileDownload($filePath, $fileName);
-}
+// Note: Legacy file handling functions have been removed
+// For file uploads, use: FileHandler::uploadFile($file, $targetDir, $allowedTypes)
+// For serving files, use: FileHandler::serveFileDownload($filePath, $fileName)
 ?>

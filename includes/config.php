@@ -1,12 +1,12 @@
 <?php
 // Database configuration
-define('DB_HOST', 'localhost');
+define('DB_HOST', '127.0.0.1');  // Using IP instead of 'localhost'
 define('DB_USER', 'prog5user');
 define('DB_PASS', 'your_password');
 define('DB_NAME', 'classroom_management');
 
 // Site configuration
-define('SITE_URL', 'http://192.168.159.130');  // or http://localhost/prog5
+define('SITE_URL', 'http://localhost:8000');  // Updated to match your PHP server
 
 // Upload directories - ensure these use absolute paths
 define('UPLOAD_DIR', $_SERVER['DOCUMENT_ROOT'] . '/uploads/');

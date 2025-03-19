@@ -110,17 +110,5 @@ class FileHandler {
         readfile($filePath);
         exit;
     }
-
-    /**
-     * Get avatar URL for a user
-     * @param string|null $avatar Avatar path/URL
-     * @return string Avatar URL
-     */
-    public static function getAvatarUrl($avatar) {
-        if (!empty($avatar)) {
-            return $avatar;
-        }
-        return 'img/default-avatar.png';
-    }
 }
 ?>
