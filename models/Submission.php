@@ -40,24 +40,6 @@ class Submission extends Model {
     }
     
     /**
-     * Get a submission with details
-     * 
-     * @param int $id Submission ID
-     * @return array|null Submission with details or null
-     */
-    public function getSubmissionWithDetails($id) {
-        $sql = "SELECT submissions.*, 
-                users.fullname AS student_name, users.username, 
-                assignments.title AS assignment_title 
-                FROM submissions 
-                JOIN users ON submissions.student_id = users.id 
-                JOIN assignments ON submissions.assignment_id = assignments.id 
-                WHERE submissions.id = ?";
-        
-        return $this->queryOne($sql, "i", [$id]);
-    }
-    
-    /**
      * Find a submission by assignment and student
      * 
      * @param int $assignmentId Assignment ID
@@ -116,18 +98,6 @@ class Submission extends Model {
             'success' => false,
             'error' => 'Database error: Unable to save submission'
         ];
-    }
-    
-    /**
-     * Check if a student has submitted an assignment
-     * 
-     * @param int $assignmentId Assignment ID
-     * @param int $studentId Student ID
-     * @return bool True if submitted, false otherwise
-     */
-    public function hasSubmitted($assignmentId, $studentId) {
-        $submission = $this->findByAssignmentAndStudent($assignmentId, $studentId);
-        return $submission !== null;
     }
 }
 ?>

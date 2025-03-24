@@ -19,6 +19,22 @@ class Challenge extends Model {
     }
     
     /**
+     * Get challenges with teacher details, filtered by teacher ID
+     * 
+     * @param int $teacherId The teacher ID to filter by
+     * @return array Challenges with teacher details
+     */
+    public function getChallengesWithTeacherFiltered($teacherId) {
+        $sql = "SELECT challenges.*, users.fullname AS teacher_name 
+                FROM challenges 
+                JOIN users ON challenges.teacher_id = users.id 
+                WHERE challenges.teacher_id = ?
+                ORDER BY challenges.created_at DESC";
+        
+        return $this->query($sql, "i", [$teacherId]);
+    }
+    
+    /**
      * Get challenge with file content
      * 
      * @param int $id Challenge ID

@@ -49,18 +49,23 @@ class Assignment extends Model {
     }
     
     /**
-     * Get a single assignment with teacher details
+     * Get assignments for a student with submission status, filtered by teacher
      * 
-     * @param int $id Assignment ID
-     * @return array|null Assignment with teacher details or null
+     * @param int $studentId The student ID
+     * @param int $teacherId The teacher ID
+     * @return array Assignments with submission status
      */
-    public function findWithTeacher($id) {
-        $sql = "SELECT assignments.*, users.fullname AS teacher_name 
-                FROM assignments 
-                JOIN users ON assignments.teacher_id = users.id 
-                WHERE assignments.id = ?";
+    public function getAssignmentsForStudentByTeacher($studentId, $teacherId) {
+        $assignments = $this->getAssignmentsWithTeacher($teacherId);
         
-        return $this->queryOne($sql, "i", [$id]);
+        foreach ($assignments as &$assignment) {
+            $sql = "SELECT COUNT(*) as count FROM submissions 
+                    WHERE assignment_id = ? AND student_id = ?";
+            $result = $this->queryOne($sql, "ii", [$assignment['id'], $studentId]);
+            $assignment['has_submitted'] = ($result && $result['count'] > 0);
+        }
+        
+        return $assignments;
     }
 }
 ?>

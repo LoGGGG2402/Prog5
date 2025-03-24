@@ -9,8 +9,20 @@ if (!isLoggedIn()) {
 // Page title
 $pageTitle = 'Challenges';
 
+// Get teacher ID filter from query string if provided
+$teacher_id = isset($_GET['teacher_id']) ? (int)$_GET['teacher_id'] : 0;
+
+// Get all teachers for the filter dropdown
+$teachers = $userModel->getAllTeachers();
+
 // Fetch challenges using the Challenge model
-$challenges = $challengeModel->getChallengesWithTeacher();
+if ($teacher_id > 0) {
+    // Filter by teacher
+    $challenges = $challengeModel->getChallengesWithTeacherFiltered($teacher_id);
+} else {
+    // Get all challenges
+    $challenges = $challengeModel->getChallengesWithTeacher();
+}
 
 // Handle challenge answer submission
 $message = '';
@@ -76,11 +88,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_answer']) && i
         <div class="row mb-3">
             <div class="col-md-12 d-flex justify-content-between align-items-center">
                 <h2>Challenges</h2>
-                <?php if (isTeacher()): ?>
-                <a href="create-challenge.php" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create Challenge
-                </a>
-                <?php endif; ?>
+                <div class="d-flex">
+                    <!-- Teacher Filter Dropdown -->
+                    <div class="dropdown mr-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="teacherFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <?php echo $teacher_id > 0 ? 'Filter: ' . $userModel->getTeacherName($teacher_id) : 'All Teachers'; ?>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="teacherFilterDropdown">
+                            <a class="dropdown-item <?php echo $teacher_id == 0 ? 'active' : ''; ?>" href="challenges.php">All Teachers</a>
+                            <div class="dropdown-divider"></div>
+                            <?php foreach ($teachers as $teacher): ?>
+                                <a class="dropdown-item <?php echo $teacher_id == $teacher['id'] ? 'active' : ''; ?>" 
+                                   href="challenges.php?teacher_id=<?php echo $teacher['id']; ?>">
+                                    <?php echo $teacher['fullname']; ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <?php if (isTeacher()): ?>
+                    <a href="create-challenge.php" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Challenge
+                    </a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         

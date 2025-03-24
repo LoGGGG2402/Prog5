@@ -37,7 +37,20 @@ class User extends Model {
      * @return array List of teachers
      */
     public function getAllTeachers() {
-        return $this->findBy('role', 'teacher');
+        $sql = "SELECT id, fullname FROM users WHERE role = 'teacher' ORDER BY fullname";
+        return $this->query($sql);
+    }
+    
+    /**
+     * Get teacher name by ID
+     * 
+     * @param int $id Teacher ID
+     * @return string Teacher name or 'Unknown Teacher' if not found
+     */
+    public function getTeacherName($id) {
+        $sql = "SELECT fullname FROM users WHERE id = ? AND role = 'teacher'";
+        $result = $this->queryOne($sql, "i", [$id]);
+        return $result ? $result['fullname'] : 'Unknown Teacher';
     }
     
     /**
@@ -47,20 +60,6 @@ class User extends Model {
      */
     public function getAllStudents() {
         return $this->findBy('role', 'student');
-    }
-    
-    /**
-     * Create a new user with password hashing
-     * 
-     * @param array $data User data including plain text password
-     * @return int|false New user ID or false on failure
-     */
-    public function createUser($data) {
-        if (isset($data['password'])) {
-            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-        }
-        
-        return $this->create($data);
     }
     
     /**
@@ -81,18 +80,6 @@ class User extends Model {
         }
         
         return $this->update($id, $data);
-    }
-    
-    /**
-     * Check if user has unread messages
-     * 
-     * @param int $userId User ID
-     * @return bool True if has unread messages, false otherwise
-     */
-    public function hasUnreadMessages($userId) {
-        $sql = "SELECT COUNT(*) as count FROM messages WHERE receiver_id = ? AND is_read = 0";
-        $result = $this->queryOne($sql, "i", [$userId]);
-        return $result && $result['count'] > 0;
     }
 }
 ?>

@@ -14,16 +14,23 @@ if (!isTeacher()) {
 $message = '';
 $error = '';
 
-// Get assignment ID from query string if provided
+// Get filter parameters from query string
 $assignment_id = isset($_GET['assignment_id']) ? (int)$_GET['assignment_id'] : 0;
+$student_id = isset($_GET['student_id']) ? (int)$_GET['student_id'] : 0;
 
 // Get all assignments for the dropdown filter using Assignment model
 $assignments = $assignmentModel->all('created_at', 'DESC');
 
-// Get submissions based on filter
+// Get all students for the dropdown filter
+$students = $userModel->getAllStudents();
+
+// Get submissions based on filters
 $filter = [];
 if ($assignment_id > 0) {
     $filter['assignment_id'] = $assignment_id;
+}
+if ($student_id > 0) {
+    $filter['student_id'] = $student_id;
 }
 $submissions = $submissionModel->getSubmissionsWithDetails($filter);
 
@@ -57,19 +64,59 @@ $pageTitle = 'View Submissions';
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4>Student Submissions</h4>
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="assignmentFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <?php echo $assignment_id > 0 ? 'Filter: Selected Assignment' : 'All Assignments'; ?>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="assignmentFilterDropdown">
-                                <a class="dropdown-item" href="submissions.php">All Assignments</a>
-                                <div class="dropdown-divider"></div>
-                                <?php foreach ($assignments as $assignment): ?>
-                                    <a class="dropdown-item <?php echo $assignment_id == $assignment['id'] ? 'active' : ''; ?>" 
-                                       href="submissions.php?assignment_id=<?php echo $assignment['id']; ?>">
-                                        <?php echo $assignment['title']; ?>
+                        <div class="d-flex">
+                            <!-- Student Filter Dropdown -->
+                            <div class="dropdown mr-2">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="studentFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <?php 
+                                    if ($student_id > 0) {
+                                        $student = $userModel->find($student_id);
+                                        echo 'Student: ' . ($student ? $student['fullname'] : 'Unknown');
+                                    } else {
+                                        echo 'All Students';
+                                    }
+                                    ?>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="studentFilterDropdown">
+                                    <a class="dropdown-item <?php echo $student_id == 0 ? 'active' : ''; ?>" 
+                                       href="submissions.php<?php echo $assignment_id > 0 ? '?assignment_id=' . $assignment_id : ''; ?>">
+                                        All Students
                                     </a>
-                                <?php endforeach; ?>
+                                    <div class="dropdown-divider"></div>
+                                    <?php foreach ($students as $student): ?>
+                                        <a class="dropdown-item <?php echo $student_id == $student['id'] ? 'active' : ''; ?>" 
+                                           href="submissions.php?student_id=<?php echo $student['id']; ?><?php echo $assignment_id > 0 ? '&assignment_id=' . $assignment_id : ''; ?>">
+                                            <?php echo $student['fullname']; ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            
+                            <!-- Assignment Filter Dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="assignmentFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <?php 
+                                    if ($assignment_id > 0) {
+                                        $assignment = $assignmentModel->find($assignment_id);
+                                        echo 'Assignment: ' . ($assignment ? $assignment['title'] : 'Unknown');
+                                    } else {
+                                        echo 'All Assignments';
+                                    }
+                                    ?>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="assignmentFilterDropdown">
+                                    <a class="dropdown-item <?php echo $assignment_id == 0 ? 'active' : ''; ?>" 
+                                       href="submissions.php<?php echo $student_id > 0 ? '?student_id=' . $student_id : ''; ?>">
+                                        All Assignments
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <?php foreach ($assignments as $assignment): ?>
+                                        <a class="dropdown-item <?php echo $assignment_id == $assignment['id'] ? 'active' : ''; ?>" 
+                                           href="submissions.php?assignment_id=<?php echo $assignment['id']; ?><?php echo $student_id > 0 ? '&student_id=' . $student_id : ''; ?>">
+                                            <?php echo $assignment['title']; ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                         </div>
                     </div>

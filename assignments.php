@@ -9,11 +9,30 @@ if (!isLoggedIn()) {
 // Page title
 $pageTitle = 'Assignments';
 
+// Get teacher ID filter from query string if provided
+$teacher_id = isset($_GET['teacher_id']) ? (int)$_GET['teacher_id'] : 0;
+
+// Get all teachers for the filter dropdown
+$teachers = $userModel->getAllTeachers();
+
 // Fetch assignments
 if (isStudent()) {
-    $assignments = $assignmentModel->getAssignmentsForStudent($_SESSION['user_id']);
+    if ($teacher_id > 0) {
+        // Filter by teacher
+        $assignments = $assignmentModel->getAssignmentsForStudentByTeacher($_SESSION['user_id'], $teacher_id);
+    } else {
+        // Get all assignments
+        $assignments = $assignmentModel->getAssignmentsForStudent($_SESSION['user_id']);
+    }
 } else {
-    $assignments = $assignmentModel->getAssignmentsWithTeacher();
+    // For teachers
+    if ($teacher_id > 0) {
+        // Filter by teacher
+        $assignments = $assignmentModel->getAssignmentsWithTeacher($teacher_id);
+    } else {
+        // Get all assignments
+        $assignments = $assignmentModel->getAssignmentsWithTeacher();
+    }
 }
 ?>
 
@@ -34,11 +53,30 @@ if (isStudent()) {
         <div class="row mb-3">
             <div class="col-md-12 d-flex justify-content-between align-items-center">
                 <h2>Assignments</h2>
-                <?php if (isTeacher()): ?>
-                <a href="create-assignment.php" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create Assignment
-                </a>
-                <?php endif; ?>
+                <div class="d-flex">
+                    <!-- Teacher Filter Dropdown -->
+                    <div class="dropdown mr-2">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="teacherFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <?php echo $teacher_id > 0 ? 'Filter: ' . $userModel->getTeacherName($teacher_id) : 'All Teachers'; ?>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="teacherFilterDropdown">
+                            <a class="dropdown-item <?php echo $teacher_id == 0 ? 'active' : ''; ?>" href="assignments.php">All Teachers</a>
+                            <div class="dropdown-divider"></div>
+                            <?php foreach ($teachers as $teacher): ?>
+                                <a class="dropdown-item <?php echo $teacher_id == $teacher['id'] ? 'active' : ''; ?>" 
+                                   href="assignments.php?teacher_id=<?php echo $teacher['id']; ?>">
+                                    <?php echo $teacher['fullname']; ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                    <?php if (isTeacher()): ?>
+                    <a href="create-assignment.php" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Assignment
+                    </a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         

@@ -253,16 +253,5 @@ class Model {
         }
         return $types;
     }
-    
-    /**
-     * Count total records
-     *
-     * @return int Total count
-     */
-    public function count() {
-        $sql = "SELECT COUNT(*) as count FROM {$this->table}";
-        $result = $this->queryOne($sql);
-        return $result ? (int)$result['count'] : 0;
-    }
 }
 ?>

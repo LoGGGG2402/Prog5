@@ -36,15 +36,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                 'phone' => $phone
             ];
 
+            // Allow password change for all users
+            if (!empty($_POST['password'])) {
+                // Verify password confirmation
+                if ($_POST['password'] === $_POST['password_confirm']) {
+                    $userData['password'] = $_POST['password']; // Will be hashed by updateUser
+                } else {
+                    $error = "Passwords do not match";
+                }
+            }
+
             // For teacher updating student information
             if (isTeacher() && $user['role'] == 'student') {
                 $userData['username'] = sanitize($_POST['username']);
                 $userData['fullname'] = sanitize($_POST['fullname']);
-
-                // Update password if provided
-                if (!empty($_POST['password'])) {
-                    $userData['password'] = $_POST['password']; // Will be hashed by updateUser
-                }
             }
 
             // Handle avatar upload
@@ -386,6 +391,19 @@ $pageTitle = 'Profile: ' . $user['fullname'];
                             <div class="form-group">
                                 <label for="password">New Password (leave blank to keep current)</label>
                                 <input type="password" class="form-control" id="password" name="password">
+                            </div>
+                            <div class="form-group">
+                                <label for="password_confirm">Confirm New Password</label>
+                                <input type="password" class="form-control" id="password_confirm" name="password_confirm">
+                            </div>
+                        <?php else: ?>
+                            <div class="form-group">
+                                <label for="password">New Password (leave blank to keep current)</label>
+                                <input type="password" class="form-control" id="password" name="password">
+                            </div>
+                            <div class="form-group">
+                                <label for="password_confirm">Confirm New Password</label>
+                                <input type="password" class="form-control" id="password_confirm" name="password_confirm">
                             </div>
                         <?php endif; ?>
 
