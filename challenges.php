@@ -17,8 +17,8 @@ $teachers = $userModel->getAllTeachers();
 
 // Fetch challenges using the Challenge model
 if (!empty($teacher_id)) {
-    // Filter by teacher
-    $challenges = $challengeModel->getChallengesWithTeacherFiltered($teacher_id);
+    // Filter by teacher - use the correct method with teacher_id parameter
+    $challenges = $challengeModel->getChallengesWithTeacher($teacher_id);
 } else {
     // Get all challenges
     $challenges = $challengeModel->getChallengesWithTeacher();
