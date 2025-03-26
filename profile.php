@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             break;
 
         case 'edit_message':
-            $messageId = (int) $_POST['message_id'];
+            $messageId = $_POST['message_id'];
             $messageText = sanitize($_POST['message']);
             $senderId = $_SESSION['user_id'];
 
@@ -189,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             break;
 
         case 'delete_message':
-            $messageId = (int) $_POST['message_id'];
+            $messageId = $_POST['message_id'];
             $senderId = $_SESSION['user_id'];
 
             // First, check if the message belongs to the current user
@@ -217,7 +217,7 @@ if ($user_id != $_SESSION['user_id']) {
 
 // Check if we're coming from a reply action
 $from_reply = isset($_GET['from_reply']) && $_GET['from_reply'] == 1;
-$sender_id = isset($_GET['sender_id']) ? (int)$_GET['sender_id'] : 0;
+$sender_id = isset($_GET['sender_id']) ? $_GET['sender_id'] : 0;
 
 // If we arrived at this page from clicking "Reply", mark that sender's messages as read
 if ($from_reply && $sender_id > 0) {

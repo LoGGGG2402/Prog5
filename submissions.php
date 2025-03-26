@@ -15,8 +15,8 @@ $message = '';
 $error = '';
 
 // Get filter parameters from query string
-$assignment_id = isset($_GET['assignment_id']) ? (int)$_GET['assignment_id'] : 0;
-$student_id = isset($_GET['student_id']) ? (int)$_GET['student_id'] : 0;
+$assignment_id = isset($_GET['assignment_id']) ? $_GET['assignment_id'] : '';
+$student_id = isset($_GET['student_id']) ? $_GET['student_id'] : '';
 
 // Get all assignments for the dropdown filter using Assignment model
 $assignments = $assignmentModel->all('created_at', 'DESC');
@@ -26,10 +26,10 @@ $students = $userModel->getAllStudents();
 
 // Get submissions based on filters
 $filter = [];
-if ($assignment_id > 0) {
+if (!empty($assignment_id)) {
     $filter['assignment_id'] = $assignment_id;
 }
-if ($student_id > 0) {
+if (!empty($student_id)) {
     $filter['student_id'] = $student_id;
 }
 $submissions = $submissionModel->getSubmissionsWithDetails($filter);
@@ -69,7 +69,7 @@ $pageTitle = 'View Submissions';
                             <div class="dropdown mr-2">
                                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="studentFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <?php 
-                                    if ($student_id > 0) {
+                                    if (!empty($student_id)) {
                                         $student = $userModel->find($student_id);
                                         echo 'Student: ' . ($student ? $student['fullname'] : 'Unknown');
                                     } else {
@@ -78,14 +78,14 @@ $pageTitle = 'View Submissions';
                                     ?>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="studentFilterDropdown">
-                                    <a class="dropdown-item <?php echo $student_id == 0 ? 'active' : ''; ?>" 
-                                       href="submissions.php<?php echo $assignment_id > 0 ? '?assignment_id=' . $assignment_id : ''; ?>">
+                                    <a class="dropdown-item <?php echo empty($student_id) ? 'active' : ''; ?>" 
+                                       href="submissions.php<?php echo !empty($assignment_id) ? '?assignment_id=' . $assignment_id : ''; ?>">
                                         All Students
                                     </a>
                                     <div class="dropdown-divider"></div>
                                     <?php foreach ($students as $student): ?>
                                         <a class="dropdown-item <?php echo $student_id == $student['id'] ? 'active' : ''; ?>" 
-                                           href="submissions.php?student_id=<?php echo $student['id']; ?><?php echo $assignment_id > 0 ? '&assignment_id=' . $assignment_id : ''; ?>">
+                                           href="submissions.php?student_id=<?php echo $student['id']; ?><?php echo !empty($assignment_id) ? '&assignment_id=' . $assignment_id : ''; ?>">
                                             <?php echo $student['fullname']; ?>
                                         </a>
                                     <?php endforeach; ?>
@@ -96,7 +96,7 @@ $pageTitle = 'View Submissions';
                             <div class="dropdown">
                                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="assignmentFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <?php 
-                                    if ($assignment_id > 0) {
+                                    if (!empty($assignment_id)) {
                                         $assignment = $assignmentModel->find($assignment_id);
                                         echo 'Assignment: ' . ($assignment ? $assignment['title'] : 'Unknown');
                                     } else {
@@ -105,14 +105,14 @@ $pageTitle = 'View Submissions';
                                     ?>
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="assignmentFilterDropdown">
-                                    <a class="dropdown-item <?php echo $assignment_id == 0 ? 'active' : ''; ?>" 
-                                       href="submissions.php<?php echo $student_id > 0 ? '?student_id=' . $student_id : ''; ?>">
+                                    <a class="dropdown-item <?php echo empty($assignment_id) ? 'active' : ''; ?>" 
+                                       href="submissions.php<?php echo !empty($student_id) ? '?student_id=' . $student_id : ''; ?>">
                                         All Assignments
                                     </a>
                                     <div class="dropdown-divider"></div>
                                     <?php foreach ($assignments as $assignment): ?>
                                         <a class="dropdown-item <?php echo $assignment_id == $assignment['id'] ? 'active' : ''; ?>" 
-                                           href="submissions.php?assignment_id=<?php echo $assignment['id']; ?><?php echo $student_id > 0 ? '&student_id=' . $student_id : ''; ?>">
+                                           href="submissions.php?assignment_id=<?php echo $assignment['id']; ?><?php echo !empty($student_id) ? '&student_id=' . $student_id : ''; ?>">
                                             <?php echo $assignment['title']; ?>
                                         </a>
                                     <?php endforeach; ?>

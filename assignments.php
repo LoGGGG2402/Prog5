@@ -10,14 +10,14 @@ if (!isLoggedIn()) {
 $pageTitle = 'Assignments';
 
 // Get teacher ID filter from query string if provided
-$teacher_id = isset($_GET['teacher_id']) ? (int)$_GET['teacher_id'] : 0;
+$teacher_id = isset($_GET['teacher_id']) ? $_GET['teacher_id'] : '';
 
 // Get all teachers for the filter dropdown
 $teachers = $userModel->getAllTeachers();
 
 // Fetch assignments
 if (isStudent()) {
-    if ($teacher_id > 0) {
+    if (!empty($teacher_id)) {
         // Filter by teacher
         $assignments = $assignmentModel->getAssignmentsForStudentByTeacher($_SESSION['user_id'], $teacher_id);
     } else {
@@ -26,7 +26,7 @@ if (isStudent()) {
     }
 } else {
     // For teachers
-    if ($teacher_id > 0) {
+    if (!empty($teacher_id)) {
         // Filter by teacher
         $assignments = $assignmentModel->getAssignmentsWithTeacher($teacher_id);
     } else {
@@ -57,10 +57,10 @@ if (isStudent()) {
                     <!-- Teacher Filter Dropdown -->
                     <div class="dropdown mr-2">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="teacherFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <?php echo $teacher_id > 0 ? 'Filter: ' . $userModel->getTeacherName($teacher_id) : 'All Teachers'; ?>
+                            <?php echo !empty($teacher_id) ? 'Filter: ' . $userModel->getTeacherName($teacher_id) : 'All Teachers'; ?>
                         </button>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="teacherFilterDropdown">
-                            <a class="dropdown-item <?php echo $teacher_id == 0 ? 'active' : ''; ?>" href="assignments.php">All Teachers</a>
+                            <a class="dropdown-item <?php echo empty($teacher_id) ? 'active' : ''; ?>" href="assignments.php">All Teachers</a>
                             <div class="dropdown-divider"></div>
                             <?php foreach ($teachers as $teacher): ?>
                                 <a class="dropdown-item <?php echo $teacher_id == $teacher['id'] ? 'active' : ''; ?>" 

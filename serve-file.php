@@ -11,10 +11,10 @@ if (!isLoggedIn()) {
 
 // Get parameters
 $type = isset($_GET['type']) ? $_GET['type'] : '';
-$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$id = isset($_GET['id']) ? $_GET['id'] : '';
 
 // Validate parameters
-if (empty($type) || $id <= 0) {
+if (empty($type) || empty($id)) {
     header('HTTP/1.0 400 Bad Request');
     echo "Invalid request";
     exit;

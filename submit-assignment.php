@@ -16,7 +16,7 @@ $message = '';
 $error = '';
 
 // Get assignment ID from query string
-$assignment_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$assignment_id = isset($_GET['id']) ? $_GET['id'] : '';
 
 // Get assignment details using Assignment model
 $assignment = $assignmentModel->find($assignment_id);
