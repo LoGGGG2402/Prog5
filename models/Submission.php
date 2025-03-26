@@ -50,7 +50,7 @@ class Submission extends Model {
         $sql = "SELECT * FROM submissions 
                 WHERE assignment_id = ? AND student_id = ?";
         
-        return $this->queryOne($sql, "ss", [$assignmentId, $studentId]); // Changed from "ii" to "ss" for UUID
+        return $this->queryOne($sql, "ss", [$assignmentId, $studentId]);
     }
     
     /**

@@ -7,7 +7,7 @@ class Message extends Model {
     
     /**
      * Get unread messages for a specific user
-     * @param int $user_id The user ID to get messages for
+     * @param string $user_id The user ID to get messages for (UUID)
      * @return array Array of unread messages with sender information
      */
     public function getUnreadMessages($user_id) {
@@ -16,13 +16,13 @@ class Message extends Model {
                 JOIN users u ON m.sender_id = u.id
                 WHERE m.receiver_id = ? AND m.is_read = 0
                 ORDER BY m.created_at DESC";
-        return $this->query($sql, "i", [$user_id]);
+        return $this->query($sql, "s", [$user_id]);
     }
     
     /**
      * Get conversation between two users
-     * @param int $user1_id First user ID
-     * @param int $user2_id Second user ID
+     * @param string $user1_id First user ID (UUID)
+     * @param string $user2_id Second user ID (UUID)
      * @return array Array of messages between the two users
      */
     public function getConversation($user1_id, $user2_id) {
@@ -32,7 +32,7 @@ class Message extends Model {
                 WHERE (m.sender_id = ? AND m.receiver_id = ?) 
                    OR (m.sender_id = ? AND m.receiver_id = ?)
                 ORDER BY m.created_at ASC";
-        return $this->query($sql, "iiii", [$user1_id, $user2_id, $user2_id, $user1_id]);
+        return $this->query($sql, "ssss", [$user1_id, $user2_id, $user2_id, $user1_id]);
     }
     
     /**

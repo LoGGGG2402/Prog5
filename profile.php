@@ -11,7 +11,7 @@ $message = '';
 $error = '';
 
 // Get user ID from query string
-$user_id = isset($_GET['id']) ? (int) $_GET['id'] : $_SESSION['user_id'];
+$user_id = isset($_GET['id']) ? $_GET['id'] : $_SESSION['user_id'];
 
 // Get user details using User model
 $user = $userModel->find($user_id);

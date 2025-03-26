@@ -46,7 +46,7 @@ class Challenge extends Model {
     /**
      * Get challenge with file content
      * 
-     * @param int $id Challenge ID
+     * @param string $id Challenge ID (UUID)
      * @return array|null Challenge with file content or null
      */
     public function getChallengeWithContent($id) {
@@ -64,7 +64,7 @@ class Challenge extends Model {
     /**
      * Check if a challenge result matches
      * 
-     * @param int $challengeId Challenge ID
+     * @param string $challengeId Challenge ID (UUID)
      * @param string $answer User's answer
      * @return bool True if correct, false otherwise
      */

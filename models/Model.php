@@ -68,7 +68,7 @@ class Model {
     /**
      * Update an existing record
      *
-     * @param int $id The ID of the record to update
+     * @param string $id The ID of the record to update (UUID)
      * @param array $data Associative array of column => value pairs
      * @return bool True on success, false on failure
      */
@@ -93,7 +93,7 @@ class Model {
     /**
      * Delete a record
      *
-     * @param int $id The ID of the record to delete
+     * @param string $id The ID of the record to delete (UUID)
      * @return bool True on success, false on failure
      */
     public function delete($id) {
