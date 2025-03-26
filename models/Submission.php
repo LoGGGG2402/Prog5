@@ -25,13 +25,13 @@ class Submission extends Model {
         if (!empty($filters['assignment_id'])) {
             $sql .= " AND submissions.assignment_id = ?";
             $params[] = $filters['assignment_id'];
-            $types .= "i";
+            $types .= "s"; // Changed from "i" to "s" for UUID
         }
         
         if (!empty($filters['student_id'])) {
             $sql .= " AND submissions.student_id = ?";
             $params[] = $filters['student_id'];
-            $types .= "i";
+            $types .= "s"; // Changed from "i" to "s" for UUID
         }
         
         $sql .= " ORDER BY submissions.created_at DESC";
@@ -42,15 +42,15 @@ class Submission extends Model {
     /**
      * Find a submission by assignment and student
      * 
-     * @param int $assignmentId Assignment ID
-     * @param int $studentId Student ID
+     * @param string $assignmentId Assignment ID
+     * @param string $studentId Student ID
      * @return array|null Submission or null if not found
      */
     public function findByAssignmentAndStudent($assignmentId, $studentId) {
         $sql = "SELECT * FROM submissions 
                 WHERE assignment_id = ? AND student_id = ?";
         
-        return $this->queryOne($sql, "ii", [$assignmentId, $studentId]);
+        return $this->queryOne($sql, "ss", [$assignmentId, $studentId]); // Changed from "ii" to "ss" for UUID
     }
     
     /**

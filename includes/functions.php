@@ -54,6 +54,20 @@ function formatDate($dateString, $format = 'M j, Y g:i A') {
     return date($format, strtotime($dateString));
 }
 
+/**
+ * Generate a UUID v4
+ * @return string UUID string
+ */
+function generate_uuid() {
+    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        mt_rand(0, 0xffff),
+        mt_rand(0, 0x0fff) | 0x4000,
+        mt_rand(0, 0x3fff) | 0x8000,
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    );
+}
+
 // Note: Legacy file handling functions have been removed
 // For file uploads, use: FileHandler::uploadFile($file, $targetDir, $allowedTypes)
 // For serving files, use: FileHandler::serveFileDownload($filePath, $fileName)

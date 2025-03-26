@@ -37,20 +37,18 @@ class User extends Model {
      * @return array List of teachers
      */
     public function getAllTeachers() {
-        $sql = "SELECT id, fullname FROM users WHERE role = 'teacher' ORDER BY fullname";
-        return $this->query($sql);
+        return $this->findBy('role', 'teacher');
     }
     
     /**
      * Get teacher name by ID
      * 
-     * @param int $id Teacher ID
+     * @param string $id Teacher ID
      * @return string Teacher name or 'Unknown Teacher' if not found
      */
     public function getTeacherName($id) {
-        $sql = "SELECT fullname FROM users WHERE id = ? AND role = 'teacher'";
-        $result = $this->queryOne($sql, "i", [$id]);
-        return $result ? $result['fullname'] : 'Unknown Teacher';
+        $teacher = $this->find($id);
+        return $teacher ? $teacher['fullname'] : 'Unknown Teacher';
     }
     
     /**
@@ -65,7 +63,7 @@ class User extends Model {
     /**
      * Update a user, handling password hashing if needed
      * 
-     * @param int $id User ID
+     * @param string $id User ID
      * @param array $data User data, possibly including new password
      * @return bool True on success, false on failure
      */
@@ -80,6 +78,26 @@ class User extends Model {
         }
         
         return $this->update($id, $data);
+    }
+    
+    /**
+     * Create a new user with proper password hashing
+     * 
+     * @param array $data User data including password
+     * @return string|bool ID of created user or false on failure
+     */
+    public function create($data) {
+        // Hash password before saving
+        if (isset($data['password'])) {
+            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+        }
+        
+        // Generate UUID if not provided
+        if (!isset($data['id'])) {
+            $data['id'] = generate_uuid();
+        }
+        
+        return parent::create($data);
     }
 }
 ?>

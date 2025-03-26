@@ -12,12 +12,12 @@ class Model {
     /**
      * Find a record by its primary key
      *
-     * @param int $id The ID to find
+     * @param string $id The ID to find
      * @return array|null The record found or null if not found
      */
     public function find($id) {
         $sql = "SELECT * FROM {$this->table} WHERE {$this->primaryKey} = ?";
-        return $this->queryOne($sql, "i", [$id]);
+        return $this->queryOne($sql, "s", [$id]);
     }
     
     /**
@@ -38,12 +38,16 @@ class Model {
     }
     
     /**
-     * Create a new record
+     * Create a new record with UUID
      *
      * @param array $data Associative array of column => value pairs
-     * @return int|false The new record ID or false on failure
+     * @return string|false The new record UUID or false on failure
      */
     public function create($data) {
+        if (!isset($data['id'])) {
+            $data['id'] = $this->generateUuid();
+        }
+        
         $columns = array_keys($data);
         $values = array_values($data);
         $placeholders = array_fill(0, count($values), '?');
@@ -56,7 +60,9 @@ class Model {
         );
         
         $types = $this->determineTypes($values);
-        return $this->execute($sql, $types, $values, true);
+        $success = $this->execute($sql, $types, $values);
+        
+        return $success ? $data['id'] : false;
     }
     
     /**
@@ -92,7 +98,7 @@ class Model {
      */
     public function delete($id) {
         $sql = "DELETE FROM {$this->table} WHERE {$this->primaryKey} = ?";
-        return $this->execute($sql, "i", [$id]) !== false;
+        return $this->execute($sql, "s", [$id]) !== false;
     }
     
     /**
@@ -104,7 +110,8 @@ class Model {
      */
     public function findBy($field, $value) {
         $sql = "SELECT * FROM {$this->table} WHERE {$field} = ?";
-        $type = is_int($value) ? "i" : (is_float($value) ? "d" : "s");
+        // Properly detect type for UUID or integer fields
+        $type = $this->determineType($value);
         return $this->query($sql, $type, [$value]);
     }
     
@@ -117,7 +124,8 @@ class Model {
      */
     public function findOneBy($field, $value) {
         $sql = "SELECT * FROM {$this->table} WHERE {$field} = ?";
-        $type = is_int($value) ? "i" : (is_float($value) ? "d" : "s");
+        // Properly detect type for UUID or integer fields
+        $type = $this->determineType($value);
         return $this->queryOne($sql, $type, [$value]);
     }
     
@@ -233,6 +241,22 @@ class Model {
     }
     
     /**
+     * Determine MySQL type for a single PHP value
+     * 
+     * @param mixed $value The value to determine type for
+     * @return string MySQL parameter type
+     */
+    protected function determineType($value) {
+        if (is_int($value)) {
+            return 'i'; // Integer
+        } elseif (is_float($value)) {
+            return 'd'; // Double
+        } else {
+            return 's'; // String (also used for UUIDs)
+        }
+    }
+    
+    /**
      * Determine MySQL types from PHP values
      *
      * @param array $values Values to determine types for
@@ -241,17 +265,24 @@ class Model {
     protected function determineTypes($values) {
         $types = '';
         foreach ($values as $value) {
-            if (is_int($value)) {
-                $types .= 'i';  // Integer
-            } elseif (is_float($value)) {
-                $types .= 'd';  // Double
-            } elseif (is_string($value)) {
-                $types .= 's';  // String
-            } else {
-                $types .= 's';  // Default to string for other types
-            }
+            $types .= $this->determineType($value);
         }
         return $types;
+    }
+    
+    /**
+     * Generate a UUID v4
+     * 
+     * @return string UUID string
+     */
+    protected function generateUuid() {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
     }
 }
 ?>

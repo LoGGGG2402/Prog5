@@ -75,7 +75,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                     $error = $uploadResult['error'];
                 }
             } elseif (isset($_POST['avatar_url']) && !empty($_POST['avatar_url'])) {
-                $userData['avatar'] = sanitize($_POST['avatar_url']);
+                $avatar_url = trim($_POST['avatar_url']);
+                
+                // Validate URL format
+                if (filter_var($avatar_url, FILTER_VALIDATE_URL) === false) {
+                    $error = "Invalid URL format for avatar";
+                } 
+                // Check URL has https or http protocol
+                elseif (!preg_match('/^https?:\/\//i', $avatar_url)) {
+                    $error = "Avatar URL must begin with http:// or https://";
+                }
+                // Validate that URL points to an image file
+                else {
+                    $ext = strtolower(pathinfo(parse_url($avatar_url, PHP_URL_PATH), PATHINFO_EXTENSION));
+                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+                    
+                    if (!in_array($ext, $allowedExts)) {
+                        $error = "Avatar URL must point to an image file (jpg, jpeg, png, gif, webp, svg)";
+                    } 
+                    // Optional: You could add a check to verify the image exists
+                    else {
+                        // Security: Basic check to prevent potential unsafe URLs
+                        $blockedKeywords = ['script', 'eval', 'javascript:'];
+                        foreach ($blockedKeywords as $keyword) {
+                            if (stripos($avatar_url, $keyword) !== false) {
+                                $error = "Invalid avatar URL detected";
+                                break;
+                            }
+                        }
+                        
+                        if (empty($error)) {
+                            $userData['avatar'] = sanitize($avatar_url);
+                        }
+                    }
+                }
             }
 
             // Proceed with update if no errors

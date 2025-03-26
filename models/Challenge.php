@@ -7,31 +7,40 @@ class Challenge extends Model {
     /**
      * Get challenges with teacher details
      * 
-     * @return array Challenges with teacher details
+     * @param string|null $teacherId Optional filter by teacher ID
+     * @return array List of challenges with teacher details
      */
-    public function getChallengesWithTeacher() {
+    public function getChallengesWithTeacher($teacherId = null) {
         $sql = "SELECT challenges.*, users.fullname AS teacher_name 
                 FROM challenges 
-                JOIN users ON challenges.teacher_id = users.id 
-                ORDER BY challenges.created_at DESC";
+                JOIN users ON challenges.teacher_id = users.id ";
         
-        return $this->query($sql);
+        $params = [];
+        $types = "";
+        
+        if ($teacherId !== null) {
+            $sql .= "WHERE challenges.teacher_id = ? ";
+            $params[] = $teacherId;
+            $types = "s"; // Use string type for UUID
+        }
+        
+        $sql .= "ORDER BY challenges.created_at DESC";
+        
+        return $this->query($sql, $types, $params);
     }
     
     /**
-     * Get challenges with teacher details, filtered by teacher ID
+     * Create a new challenge with UUID
      * 
-     * @param int $teacherId The teacher ID to filter by
-     * @return array Challenges with teacher details
+     * @param array $data Challenge data
+     * @return string|bool UUID of created challenge or false on failure
      */
-    public function getChallengesWithTeacherFiltered($teacherId) {
-        $sql = "SELECT challenges.*, users.fullname AS teacher_name 
-                FROM challenges 
-                JOIN users ON challenges.teacher_id = users.id 
-                WHERE challenges.teacher_id = ?
-                ORDER BY challenges.created_at DESC";
+    public function create($data) {
+        if (!isset($data['id'])) {
+            $data['id'] = generate_uuid();
+        }
         
-        return $this->query($sql, "i", [$teacherId]);
+        return parent::create($data);
     }
     
     /**

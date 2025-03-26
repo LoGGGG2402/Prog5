@@ -1,5 +1,6 @@
 <?php
-require_once '../includes/config.php';
+require_once '../includes/init.php';
+
 
 // Create connection without selecting a database
 $conn = mysqli_connect(DB_HOST, DB_USER, DB_PASS);
@@ -20,7 +21,7 @@ mysqli_select_db($conn, DB_NAME);
 
 // Create users table
 $sql = "CREATE TABLE IF NOT EXISTS users (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    id CHAR(36) PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     fullname VARCHAR(100) NOT NULL,
@@ -36,9 +37,9 @@ if (!mysqli_query($conn, $sql)) {
 
 // Create messages table
 $sql = "CREATE TABLE IF NOT EXISTS messages (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    sender_id INT(11) NOT NULL,
-    receiver_id INT(11) NOT NULL,
+    id CHAR(36) PRIMARY KEY,
+    sender_id CHAR(36) NOT NULL,
+    receiver_id CHAR(36) NOT NULL,
     message TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_read BOOLEAN DEFAULT 0,
@@ -51,8 +52,8 @@ if (!mysqli_query($conn, $sql)) {
 
 // Create assignments table
 $sql = "CREATE TABLE IF NOT EXISTS assignments (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    teacher_id INT(11) NOT NULL,
+    id CHAR(36) PRIMARY KEY,
+    teacher_id CHAR(36) NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     file_path VARCHAR(255) NOT NULL,
@@ -66,9 +67,9 @@ if (!mysqli_query($conn, $sql)) {
 
 // Create submissions table
 $sql = "CREATE TABLE IF NOT EXISTS submissions (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    assignment_id INT(11) NOT NULL,
-    student_id INT(11) NOT NULL,
+    id CHAR(36) PRIMARY KEY,
+    assignment_id CHAR(36) NOT NULL,
+    student_id CHAR(36) NOT NULL,
     file_path VARCHAR(255) NOT NULL,
     filename VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -81,8 +82,8 @@ if (!mysqli_query($conn, $sql)) {
 
 // Create challenges table
 $sql = "CREATE TABLE IF NOT EXISTS challenges (
-    id INT(11) AUTO_INCREMENT PRIMARY KEY,
-    teacher_id INT(11) NOT NULL,
+    id CHAR(36) PRIMARY KEY,
+    teacher_id CHAR(36) NOT NULL,
     hint TEXT NOT NULL,
     file_path VARCHAR(255) NOT NULL,
     result VARCHAR(255) NOT NULL,
@@ -108,17 +109,37 @@ $students = [
 
 // Insert teachers
 foreach ($teachers as $teacher) {
-    $stmt = mysqli_prepare($conn, "INSERT IGNORE INTO users (username, password, fullname, email, phone, role) VALUES (?, ?, ?, ?, ?, 'teacher')");
-    mysqli_stmt_bind_param($stmt, "sssss", $teacher[0], $password, $teacher[1], $teacher[2], $teacher[3]);
+    // First check if user exists
+    $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE username = ?");
+    mysqli_stmt_bind_param($stmt, "s", $teacher[0]);
     mysqli_stmt_execute($stmt);
+    mysqli_stmt_store_result($stmt);
+    
+    if (mysqli_stmt_num_rows($stmt) == 0) {
+        // User doesn't exist, create with UUID
+        $uuid = generate_uuid();
+        $stmt = mysqli_prepare($conn, "INSERT INTO users (id, username, password, fullname, email, phone, role) VALUES (?, ?, ?, ?, ?, ?, 'teacher')");
+        mysqli_stmt_bind_param($stmt, "ssssss", $uuid, $teacher[0], $password, $teacher[1], $teacher[2], $teacher[3]);
+        mysqli_stmt_execute($stmt);
+    }
 }
 
 // Insert students
 foreach ($students as $student) {
-    $stmt = mysqli_prepare($conn, "INSERT IGNORE INTO users (username, password, fullname, email, phone, role) VALUES (?, ?, ?, ?, ?, 'student')");
-    mysqli_stmt_bind_param($stmt, "sssss", $student[0], $password, $student[1], $student[2], $student[3]);
+    // First check if user exists
+    $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE username = ?");
+    mysqli_stmt_bind_param($stmt, "s", $student[0]);
     mysqli_stmt_execute($stmt);
+    mysqli_stmt_store_result($stmt);
+    
+    if (mysqli_stmt_num_rows($stmt) == 0) {
+        // User doesn't exist, create with UUID
+        $uuid = generate_uuid();
+        $stmt = mysqli_prepare($conn, "INSERT INTO users (id, username, password, fullname, email, phone, role) VALUES (?, ?, ?, ?, ?, ?, 'student')");
+        mysqli_stmt_bind_param($stmt, "ssssss", $uuid, $student[0], $password, $student[1], $student[2], $student[3]);
+        mysqli_stmt_execute($stmt);
+    }
 }
 
-echo "Database and tables created successfully!";
+echo "Database and tables created successfully with UUID primary keys!";
 ?>

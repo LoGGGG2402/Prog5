@@ -32,6 +32,9 @@ $students = $userModel->getAllStudents();
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4>Manage Students</h4>
+                        <a href="create-user.php" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Add New User
+                        </a>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">

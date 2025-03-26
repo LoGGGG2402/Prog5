@@ -1,4 +1,6 @@
 <?php
+// Include functions.php to use sanitize function
+require_once __DIR__ . '/../includes/functions.php';
 
 class FileHandler {
     /**
@@ -48,8 +50,11 @@ class FileHandler {
             return ['error' => 'Invalid file type. Allowed types: ' . implode(', ', $allowedTypes)];
         }
         
+        // Sanitize the filename before using it
+        $sanitizedName = sanitize(basename($file['name']));
+        
         // Generate unique filename to prevent overwrites
-        $filename = uniqid() . '_' . basename($file['name']);
+        $filename = uniqid() . '_' . $sanitizedName;
         $targetPath = $targetDir . '/' . $filename;
         
         // Move the file

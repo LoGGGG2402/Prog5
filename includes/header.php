@@ -14,6 +14,7 @@
                 <a class="nav-item py-1 px-2" href="challenges.php" title="Challenges"><i class="fas fa-puzzle-piece"></i> <span>Challenges</span></a>
                 <?php if (isTeacher()): ?>
                 <a class="nav-item py-1 px-2" href="manage-students.php" title="Manage"><i class="fas fa-users"></i> <span>Manage</span></a>
+                <a class="nav-item py-1 px-2" href="create-user.php" title="Add User"><i class="fas fa-user-plus"></i> <span>Add User</span></a>
                 <a class="nav-item py-1 px-2" href="submissions.php" title="Submissions"><i class="fas fa-clipboard-check"></i> <span>Submissions</span></a>
                 <?php endif; ?>
                 <?php if (isStudent()): ?>
@@ -54,6 +55,7 @@
                     <a class="mobile-nav-item py-1 px-2" href="challenges.php"><i class="fas fa-puzzle-piece"></i> Challenges</a>
                     <?php if (isTeacher()): ?>
                     <a class="mobile-nav-item py-1 px-2" href="manage-students.php"><i class="fas fa-users"></i> Manage</a>
+                    <a class="mobile-nav-item py-1 px-2" href="create-user.php"><i class="fas fa-user-plus"></i> Add User</a>
                     <a class="mobile-nav-item py-1 px-2" href="submissions.php"><i class="fas fa-clipboard-check"></i> Submissions</a>
                     <?php endif; ?>
                     <?php if (isStudent()): ?>
