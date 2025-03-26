@@ -1,25 +1,25 @@
-# Disable directory listing for all directories
-Options -Indexes
-
-# Protect sensitive directories (includes and models)
-<DirectoryMatch "^/(includes|models)/">
-    Order Allow,Deny
-    Deny from all
-</DirectoryMatch>
-
-# Alternative approach using RewriteEngine
 <IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
     RewriteEngine On
-    RewriteRule ^(includes|models)(/.*)?$ - [F,L]
-</IfModule>
 
-# Prevent direct access to PHP and other script files in these directories
-<FilesMatch "^/(includes|models)/.*\.(php|inc|phtml)$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-# Additional security headers
-<IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
 </IfModule>
